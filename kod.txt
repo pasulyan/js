@@ -1,790 +1,613 @@
-var app = angular.module("App", []);
+const main_questions = {
+  id: "main_questions",
+  name: "main_questions",
+  type: "select",
+  options: [
+    {
+      value: "uluslararasi_makale",
+      text: "Uluslararası Makale",
+    },
+    {
+      value: "ulusal_makale",
+      text: "Ulusal Makale",
+    },
+    {
+      value: "tezden_uretilmis_yayin",
+      text: "Tezden Üretilmiş Yayın",
+    },
+    {
+      value: "kitap",
+      text: "Kitap",
+    },
+    {
+      value: "patent",
+      text: "Patent",
+    },
+    {
+      value: "atiflar",
+      text: "Atıflar",
+    },
+    {
+      value: "lisansustu_tez_danismanligi",
+      text: "Lisansüstü Tez Danışmanlığı",
+    },
+    {
+      value: "bilimsel_arastirma_projeleri",
+      text: "Bilimsel Araştırma Projeleri",
+    },
+    {
+      value: "bilimsel_toplanti_faliyeti",
+      text: "Bilimsel Toplantı Faliyeti",
+    },
+    {
+      value: "egitim_ogretim_faliyeti",
+      text: "Eğitim Öğretim Faliyeti",
+    },
+  ],
+};
 
-app.controller("TestController", function ($scope) {
-    $scope.init = true;
-    $scope.optionCount = 0;
-    $scope.addOrder = 0;
-    $scope.addedOptions = [];
-    $scope.currentOption = {};
-    $scope.answers = [];
-    $scope.generalPoint = 0;
-    $scope.asocProfData = [];
-    $scope.asocEntryCount = 0;
-    $scope.asocTotalPoint = 0;
-    $scope.totalStatus = false;
+const uluslararasi_makale = {
+  yurtdisi: getYurtdisi("Yabancı uyruklu musunuz veya yurtdışı doçentlik denkliği başvurusu yaptınız mı?", ["Evet", "Hayır"]),
+  yayin: getYayin("1. Uluslararası Makale", [
+    "A) SSCI, SCI, SCI- Expanded veya AHCI kapsamındaki dergilerde yayımlanmış özgün araştırma makalesi",
+    "B) Uluslararası alan indeksleri tarafından taranan (a bendinde belirtilen indeksler dışındaki indekslerde yer alan) dergilerde yayımlanmış özgün araştırma makalesi",
+    "C) a bendi kapsamındaki dergilerde yayımlanan vak'a takdimi",
+  ]),
+  zamanlama: getZamanlama("Eser Doktora Öncesi mi veya Doktora Sonrası mı?", [
+    "Doktora Öncesi",
+    "Doktora Sonrası",
+  ]),
+  toplam_yazar: getToplamYazar("Eserdeki Toplam Yazar Sayısı"),
+  sira: getSira("Kaçıncı Sıradasınız"),
+};
 
-    $scope.options = [
-        {
-            id: 0,
-            name: "Uluslararası Makale",
-            types: [
-                {
-                    id: 0,
-                    name: "Yayın",
-                    options: [
-                        {id: 0, name: "SCI Yayın"},
-                        {id: 1, name: "Diğer uluslararası hakemli dergilerde yayımlanmış makale"}
-                        //{id: 2, name: "Kitap Kritiği Yapılmış Yayın"}
-                    ]
-                }, {
-                    id: 1,
-                    name: "Başlıca Yazar",
-                    options: [
-                        {id: 1, name: "Başlıca Yazar Var, Benim"},
-                        {id: 0, name: "Başlıca Yazar Var, Başkası"},
-                        {id: 2, name: "Başlıca Yazar Yok"}
-                    ]
-                }
-            ],
-            questions: [
-                {id: 0, question: "Toplam Yazar Sayısı?", type: "text", answer: 0}
-            ]
-        },
-         {
-            id: 1,
-            name: "Ulusal Makale",
-            types: [
-                {
-                    id: 0,
-                    name: "Yayın",
-                    options: [
-                        {id: 0, name: "Ulakbim'de Yayın"},
-                                               //{id: 2, name: "Kitap Kritiği Yapılmış Yayın"}
-                    ]
-                }, {
-                    id: 1,
-                    name: "Başlıca Yazar",
-                    options: [
-                        {id: 1, name: "Başlıca Yazar Var, Benim"},
-                        {id: 0, name: "Başlıca Yazar Var, Başkası"},
-                        {id: 2, name: "Başlıca Yazar Yok"}
-                    ]
-                }
-            ],
-            questions: [
-                {id: 0, question: "Toplam Yazar Sayısı?", type: "text", answer: 0}
-            ]
-        },
-		{
-            id: 2,
-            name: "Tezden Üretilmiş Yayın | Makale ",
-            types: [
-                {
-                    id: 0,
-                    name: "Yayın",
-                    options: [
-                        {id: 0, name: "SCI Makale"},
-                        {id: 1, name: "Diğer uluslararası ve ulusal hakemli dergilerde yayımlanmış makale"},
-                    ]
-                }, {
-                    id: 1,
-                    name: "Başlıca Yazar",
-                    options: [
-                        {id: 1, name: "Başlıca Yazar Var, Benim"},
-                        {id: 0, name: "Başlıca Yazar Var, Başkası"},
-                        {id: 2, name: "Başlıca Yazar Yok"}
-                    ]
-                }
-            ],
-            questions: [
-                {id: 0, question: "Toplam Yazar Sayısı?", type: "text", answer: 0}
-            ]
-        },
-        		
-		{
-            id: 3,
-            name: "Tezden Üretilmiş Yayın | Bildiriler",
-            types: [
-                {
-                    id: 0,
-                    name: "Yayın",
-                    options: [
-                        {id: 0, name: "Ulusalararası Sözlü Bildiri"},
-                        {id: 1, name: "Ulusal Sözlü Bildiri"}
-                    ]
-                }
-            ],
-            questions: [
-                {id: 0, question: "Toplam Yazar Sayısı?", type: "text", answer: 0}
-            ]
-        },
-		
-        {
-            id: 4,
-            name: "Kitap",
-            types: [
-                {
-                    id: 0,
-                    name: "Yayın",
-                    options: [
-                        {id: 0, name: "Uluslarası Kitap"},
-                        {id: 1, name: "Uluslararası Kitap Editörlüğü / Bölüm Yazarlığı"},
-                        {id: 2, name: "Ulusal Kitap"},
-                        {id: 3, name: "Ulusal Kitap Editörlüğü / Bölüm Yazarlığı"}
-                    ]
-                }
-            ],
-            questions: [
-                {id: 0, question: "Kaç Yazar Var?", type: "text", answer: 0},
-                {id: 1, question: "Siz Kaçıncı Sıradasınız?", type: "text", answer: 0}
-            ]
-        },
+const ulusal_makale = {
+  yayin: getYayin("2. Ulusal Makale", [
+    "ULAKBİM tarafından taranan ulusal hakemli dergilerde yayımlanmış özgün araştırma makalesi ",
+  ]),
+  yazar_sayisi: getYazarSayisi("Eserdeki Toplam Yazar Sayısı"),
+  zamanlama: getZamanlama("Eser Doktora Öncesi mi veya Doktora Sonrası mı", [
+    "Doktora Öncesi",
+    "Doktora Sonrası",
+  ]),
+  sira: getSira("Kaçıncı Sıradasınız"),
+};
+
+const tezden_uretilmis_yayin = {
+  yayin: getYayin("Lisansüstü veya Tıpta Uzmanlık Tezlerinden Üretilmiş Yayınlar", [
+    "SCI, SCI-Expanded, SSCI veya AHCI kapsamındaki dergilerde yayımlanmış makale",
+    "Diğer uluslararası ve ulusal hakemli dergilerde yayımlanmış makale",
+    "Uluslararası sempozyumda/kongrede sunulmuş ve tam metni basılmış alanında bilime katkı sağlayan sözlü bildiri",
+    "Ulusal sempozyumda/kongrede sunulmuş ve tam metni basılmış alanında bilime katkı sağlayan sözlü bildiri ",
+  
+  ]),
+  zamanlama: getZamanlama("Eser Doktora Öncesi mi veya Doktora Sonrası mı", [
+    "Doktora Öncesi",
+    "Doktora Sonrası",
+  ]),
+  yazar_sayisi: getYazarSayisi("Eserdeki Toplam Yazar Sayısı"),
+  sira: getSira("Kaçıncı Sıradasınız", true),
+};
+
+const kitap = {
+  kitap: getKitap("4. Kitap", [
+    "Uluslararası yayınevleri tarafından yayımlanmış kitap",
+    "Uluslararası yayınevleri tarafından yayımlanmış kitap editörlüğü veya bölüm yazarlığı",
+    "Ulusal yayınevleri tarafından yayımlanmış kitap",
+    "Ulusal yayınevleri tarafından yayımlanmış kitap editörlüğü veya bölüm yazarlığı ",
+  ]),
+  zamanlama: getZamanlama("Eser Doktora Öncesi mi veya Doktora Sonrası mı", [
+    "Doktora Öncesi",
+    "Doktora Sonrası",
+  ]),
+  yazar_sayisi: getYazarSayisi("Eserdeki Toplam Yazar Sayısı"),
+};
+
+const patent = {
+  patent: getPatent("5. Patent ", ["Uluslararası Patent", "Ulusal Patent"]),
+  zamanlama: getZamanlama("Eser Doktora Öncesi mi veya Doktora Sonrası mı", [
+    "Doktora Öncesi",
+    "Doktora Sonrası",
+  ]),
+  kisi: getKisi("Kişi Sayısı")
+};
+
+const atiflar = {
+  atif: getAtif("6. Atıflar", [
+    "SCI, SCI-Expanded, SSCI ve AHCI tarafından taranan dergilerde adayın yazar olarak yer almadığı yayınlardan her birinde, metin içindeki atıf sayısına bakılmaksızın adayın atıf yapılan her eseri için",
+    ") SCI, SCI-Expanded, SSCI ve AHCI dışındaki endeksler tarafından taranan dergilerde adayın yazar olarak yer almadığı yayınlardan her birinde, metin içindeki atıf sayısına bakılmaksızın adayın atıf yapılan her eseri için ",
+    " Ulusal hakemli dergilerde; adayın yazar olarak yer almadığı yayınlardan her birinde, metin içindeki atıf sayısına bakılmaksızın adayın atıf yapılan her eseri için",
+  ]),
+  zamanlama: getZamanlama("Doktora Öncesi mi veya Doktora Sonrası mı", [
+    "Doktora Öncesi",
+    "Doktora Sonrası",
+  ]),
+  atif_sayisi: getAtifSayisi("Atıf Sayısı"),
+};
+
+const lisansustu_tez_danismanligi = {
+  unvan: getUnvan("Geçerli Açıklama", ["Doktora", "Yüksek Lisans"]),
+  zamanlama: getZamanlama("Gerekli Açıklama", [
+    "Doktora Öncesi",
+    "Doktora Sonrası",
+  ]),
+  danisman_sira: getDanismanSira("Geçerli Açıklama"),
+};
 
 
-        {
-            id: 5,
-            name: "Patent",
-            types: [
-                {
-                    id: 0,
-                    name: "Yayın",
-                    options: [
-                        {id: 0, name: "Uluslarası"},
-                        {id: 1, name: "Ulusal"}
-                    ]
-                }
-            ],
-            questions: [
-                {id: 0, question: "Kaç Kişi Var?", type: "text", answer: 0},
-                {id: 1, question: "Siz Kaçıncı Sıradasınız?", type: "text", answer: 0}
-            ]
-        },
+const bilimsel_arastirma_projeleri = {
+  proje_tipi: getProjeTipi("8. Bilimsel Araştırma Projeleri", [
+    ") Devam eden veya başarı ile tamamlanmış AB Çerçeve Programı bilimsel araştırma projesinde koordinatör/baş araştırmacı olmak",
+    "Devam eden veya başarı ile tamamlanmış AB Çerçeve Programı bilimsel araştırma projesinde ortak araştırmacı olmak",
+    "Devam eden veya başarı ile tamamlanmış a ve b bendi dışındaki uluslararası destekli bilimsel araştırma projelerinde (derleme ve rapor hazırlama çalışmaları hariç) görev almak",
+    "Üniversite dışındaki kamu kurumlarıyla yapılan başarıyla tamamlanmış veya devam eden bilimsel araştırma projelerinde görev almak",
+  ]),
+};
 
-        {
-            id: 6,
-            name: "Atıflar",
-            types: [
-                {
-                    id: 0,
-                    name: "Yayın",
-                    options: [
-                        {id: 0, name: "SCI Dergilerde Atıf"},
-                        {id: 1, name: "SCI Olmayan Dergilerde Atıf"},
-                        {id: 2, name: "Ulusal Hakemli Dergilerde Atıf"}
-                    ]
-                }
-            ],
-            questions: [
-                {id: 0, question: "Atıf Sayısı?", type: "text", answer: 0}
-            ]
-        },
-        {
-            id: 7,
-            name: "Lisansüstü Tez Danışmanlığı",
-            types: [
-                {
-                    id: 0,
-                    name: "Yayın",
-                    options: [
-                        {id: 0, name: "Doktora"},
-                        {id: 1, name: "Yüksek Lisans"}
-                    ]
-                }
-            ],
-            questions: [
-                {id: 0, question: "Kaçıncı Danışmansınız?", type: "text", answer: 0}
-            ]
-        },
-        {
-            id: 8,
-            name: "Bilimsel Araştırma Projeleri",
-            types: [
-                {
-                    id: 0,
-                    name: "Yayın",
-                    options: [
-                        {id: 0, name: "AB Bilimsel Araştırma Projesi Koordinatör / Başaraştırmacı Olmak"},
-                        {id: 1, name: "AB Bilimsel Araştırma Projesi Ortak Araştırmacı Olmak"},
-                        {id: 2, name: "Uluslarası Bilimsel Araştırma Projelerinde Görev Almak"},
-                        {id: 3, name: "Üniversite Dışı Kamu Kurumunda Bilimsel Araştırma Projelerinde Görev Almak"}
-                    ]
-                }
-            ],
-            questions: []
-        },
-        {
-            id: 9,
-            name: "Bilimsel Toplantı Faliyeti",
-            types: [
-                {
-                    id: 0,
-                    name: "Yayın",
-                    options: [
-                        {id: 0, name: "Ulusalarası Sözlü Bildiri"},
-                        {id: 1, name: "Ulusal Sözlü Bildiri"}
-                    ]
-                }
-            ],
-            questions: [
-                {id: 0, question: "Kaç Yazar Var?", type: "text", answer: 0},
-                {id: 1, question: "Siz Kaçıncı Sıradasınız?", type: "text", answer: 0}
-            ]
-        },
-        {
-            id: 10,
-            name: "Eğitim Öğretim Faliyeti",
-            types: [
-                {
-                    id: 0,
-                    name: "Yayın",
-                    options: [
-                        {id: 0, name: "Yüksek Lisans Doktora Dersi"},
-                        {id: 1, name: "Önlisans Lisans Dersi"}
-                    ]
-                }
-            ],
-            questions: []
+const bilimsel_toplanti_faliyeti = {
+  bildiri: getBildiri("9. Bilimsel Toplantı Faaliyeti (Başvurulan bilim alanı ile ilgili ve adayın hazırladığı lisansüstü tezlerden üretilmemiş olmak kaydıyla)", [
+    "Uluslararası bilimsel toplantılarda sunulan (poster hariç), tam metni veya özeti matbu veya elektronik olarak bildiri kitapçığında yayımlanmış çalışmalar",
+    "Ulusal bilimsel toplantılarda sunulan (poster hariç), tam metni veya özeti matbu veya elektronik olarak bildiri kitapçığında yayımlanmış çalışmalar",
+  ]),
+  yazar_sayisi: getYazarSayisi("Yazar Sayısı"),
+};
+
+const egitim_ogretim_faliyeti = {
+  ogretim_faliyeti: getOgretimFaliyeti("10. Eğitim-Öğretim Faaliyeti", [
+    "Bir dönem yüksek lisans, doktora veya doktoraya eşdeğer uzmanlık dersi",
+    "Bir dönem önlisans veya lisans dersi",
+  ]),
+  zamanlama: getZamanlama("Eser Doktora Öncesi mi veya Doktora Sonrası mı?", [
+    "Doktora Öncesi",
+    "Doktora Sonrası",
+  ])
+};
+
+const easy_way_out = {
+  uluslararasi_makale: function () {
+    console.log($SUB_QUESTION_STEP_HELPER)
+  }
+}
+
+const sub_questions = {
+  uluslararasi_makale,
+  ulusal_makale,
+  tezden_uretilmis_yayin,
+  kitap,
+  patent,
+  atiflar,
+  lisansustu_tez_danismanligi,
+  bilimsel_arastirma_projeleri,
+  bilimsel_toplanti_faliyeti,
+  egitim_ogretim_faliyeti,
+};
+
+const requirements = {
+  uluslararasi_makale: {
+    func: function () {
+      let result = [];
+
+      let all = $OUTPUT_DATA.filter((data) => {
+        return (
+          data.main_questions == "uluslararasi_makale" &&
+          (data.yayin == 0 || data.yayin == 1 || data.yayin == 2)
+        );
+      });
+
+      let sum = all.reduce((a, b) => a + b.point, 0);
+
+      if (sum < 40) {
+        result.push(
+          "Bu maddeden en az 40 puan alınmalıdır"
+        );
+      }
+      let findBaslica = $OUTPUT_DATA.find((data) => {
+        return (
+          data.main_questions == "uluslararasi_makale" &&
+          (data.yayin == 0 && data.sira == 1)
+        );
+      });
+
+      if (!findBaslica) {
+        result.push("Bu maddenin A bendi kapsamında en az bir makalede başlıca yazar olmak gerekmektedir.")
+      }
+
+      return result;
+    },
+  },
+  ulusal_makale: {
+    func: function () {
+      let result = [];
+  
+      let all = $OUTPUT_DATA.filter((data) => {
+        return (
+          data.main_questions == "ulusal_makale" &&
+          (data.zamanlama == 1 || data.zamanlama == 0) &&
+          data.yayin == 0
+        );
+      });
+  
+      let sum = all.reduce((a, b) => a + b.point, 0);
+  
+      if (sum < 8) {
+        result.push(
+          "Bu maddenin a bendi kapsamında en az 8 puan alınmalıdır."
+        );
+      }
+  
+      // Yeni özellik: en az 3 yayın yapmak zorunludur, ikisi a bendi kapsamında olmalıdır.
+      let a_bendi_count = all.filter((data) => data.a_bendi === true).length;
+      if (all.length < 3 || a_bendi_count < 2) {
+        result.push(
+          "İkisi bu maddenin a bendi kapsamında olmak üzere en az üç yayın yapmak zorunludur."
+        );
+      }
+  
+      return result;
+    }
+  }
+  
+  },
+  tezden_uretilmis_yayin: {
+    max: 10,
+    func: function () {
+      let result = [];
+
+      let all = $OUTPUT_DATA.filter((data) => {
+        return (
+          data.main_questions == "tezden_uretilmis_yayin" &&
+          data.zamanlama == 1
+        );
+      });
+
+      let sum = all.reduce((a, b) => a + b.point, 0);
+
+      if (all.length < 1) {
+        result.push(
+          "Bu madde kapsamında en az 1 yayın zorunludur. Bu maddeden en fazla 10 puan alınabilir"
+        );
+      }
+
+      return result;
+    }
+  },
+  kitap: {
+    max: 20
+  },
+  atiflar: {
+    max: 20,
+    func: function () {
+      let result = [];
+      let all = $OUTPUT_DATA.filter((data) => {
+        return (
+          data.main_questions == "atiflar" &&
+          (data.zamanlama == 1 || data.zamanlama == 0) &&
+          (data.atif == 0 ||
+            data.atif == 1 ||
+            data.atif == 2)
+        );
+      });
+      let sum = all.reduce((a, b) => a + b.point, 0);
+      if (sum < 4) {
+        result.push(
+          "Bu madde kapsamında en az 4 puan alınması zorunludur. Bu madde kapsamında en fazla 20 puan alınabilir"
+        );
+      }
+
+      return result;
+    }
+  },
+  lisansustu_tez_danismanligi: {
+    max: 10
+  },
+  bilimsel_arastirma_projeleri: {
+    max: 20
+  },
+  bilimsel_toplanti_faliyeti: {
+    max: 10,
+    func: function () {
+      let result = [];
+
+      let all = $OUTPUT_DATA.filter((data) => {
+        return (
+          data.main_questions == "bilimsel_toplanti_faliyeti" &&
+          data.zamanlama == 1 &&
+          data.bildiri == 0 &&
+          data.bildiri == 1
+        );
+      });
+
+      let sum = all.reduce((a, b) => a + b.point, 0);
+
+      if (sum < 5) {
+        result.push(
+          "Bu madde kapsamında en az 5 puan almak zorunludur, en fazla 10 puan alınabilir. Aynı toplantıda sunulan en fazla bir bildiri puanlanır."
+        );
+      }
+
+      return result;
+    }
+  },
+  egitim_ogretim_faliyeti: {
+    max: 4,
+    func: function () {
+      let result = [];
+
+      let all = $OUTPUT_DATA.filter((data) => {
+        return (
+          data.main_questions == "bilimsel_toplanti_faliyeti" &&
+          data.zamanlama == 1 &&
+          data.egitim_ogretim_faliyeti == 0 &&
+          data.egitim_ogretim_faliyeti == 1
+        );
+      });
+
+      let sum = all.reduce((a, b) => a + b.point, 0);
+
+      if (sum < 2) {
+        result.push(
+          "Bu madde kapsamında en az 2 puan almak zorunludur, ancak en fazla 4 puan alınabilir. Yurtiçi veya YÖK tarafından tanınan yurtdışı yükseköğretim kurumlarında en az 2 yıl eğitim ve öğretim faaliyetinde bulunanlar 2 puan almış sayılır."
+        );
+      }
+
+      return result;
+    }
+  }
+};
+
+const calculator_functions = {
+  uluslararasi_makale: function (data) {
+    let point;
+    let multiplier;
+
+    switch (data.yayin) {
+      case "0":
+        point = 20;
+        break;
+      case "1":
+        point = 10;
+        break;
+      case "2":
+        point = 5;
+        break;
+    }
+
+    if (data.toplam_yazar == 1) {
+      multiplier = 1.0;
+    } else if (data.toplam_yazar == 2) {
+      if (data.sira == 1) {
+        multiplier = 0.8;
+      } else {
+        multiplier = 0.5;
+      }
+    } else {
+      if (data.sira == 1) {
+        multiplier = 0.5;
+      } else {
+        multiplier = 0.5 / parseFloat(data.toplam_yazar - 1);
+      }
+    }
+
+    point = point * multiplier;
+    return point;
+  },
+  ulusal_makale: function (data) {
+    let point;
+    let multiplier;
+    switch (data.yayin) {
+      case "0":
+        point = 8;
+        break;
+    }
+
+    if (data.yazar_sayisi == 1) {
+      multiplier = 1.0;
+    } else if (data.yazar_sayisi == 2) {
+      if (data.sira == 1) {
+        multiplier = 0.8;
+      } else {
+        multiplier = 0.5;
+      }
+    } else {
+      if (data.sira == 1) {
+        multiplier = 0.5;
+      } else {
+        multiplier = 0.5 / parseFloat(data.yazar_sayisi - 1);
+      }
+    }
+
+    point = point * multiplier;
+    return point;
+  },
+  
+  tezden_uretilmis_yayin: function (data) {
+  let point;
+  let multiplier;
+
+  switch (data.yayin) {
+    case "0":
+      point = 10;
+      if (data.yazar_sayisi == 1) {
+        multiplier = 1.0;
+      } else if (data.yazar_sayisi == 2) {
+        if (data.sira == 1) {
+          multiplier = 0.8;
+        } else {
+          multiplier = 0.5;
         }
-    ];
-
-    $scope.init = function () {
-        for (var i = 0; i < $scope.options.length; i++) {
-            $scope.asocProfData.push({
-                id: $scope.options[i].id,
-                category: $scope.options[i].name,
-                totalEntry: 0,
-                totalPoint: 0,
-                asocPoint: 0,
-                status: false
-            });
+      } else {
+        if (data.sira == 1) {
+          multiplier = 0.5;
+        } else {
+          multiplier = 0.5 / parseFloat(data.yazar_sayisi - 1);
         }
-    };
-
-    $scope.addOption = function () {
-        if ($scope.init) {
-            $scope.init = false;
+      }
+      break; // Bu satırı ekleyin
+    case "1":
+      point = 5;
+      if (data.yazar_sayisi == 1) {
+        multiplier = 1.0;
+      } else if (data.yazar_sayisi == 2) {
+        if (data.sira == 1) {
+          multiplier = 0.8;
+        } else {
+          multiplier = 0.5;
         }
-
-        $scope.addOrder = 1;
-
-        $scope.type = []
-        $scope.option.types.map((val, key) => {
-            $scope.type[key] = val
-        })
-        // $scope.option.types[0].options[0];
-        $scope.currentOption["option"] = {id: $scope.option.id, name: $scope.option.name};
-    };
-
-    $scope.continueOption = function () {
-        $scope.addOrder = 2;
-        $scope.answers = [];
-
-        $scope.currentOption["type"] = []
-
-
-        $scope.type.map((val) => {
-            $scope.currentOption["type"].push({id: val.id, name: val.name})
-        })
-    };
-
-    $scope.finishOption = function () {
-        var point = 0;
-        var multiplier = 1.0;
-
-        $scope.addOrder = 0;
-
-        $scope.currentOption["params"] = [];
-
-        for (var i = 0; i < $scope.answers.length; i++) {
-            $scope.currentOption["params"][i] = {
-                question: $scope.option.questions[i].question,
-                answer: parseInt($scope.answers[i])
-            };
+      } else {
+        if (data.sira == 1) {
+          multiplier = 0.5;
+        } else {
+          multiplier = 0.5 / parseFloat(data.yazar_sayisi - 1);
         }
-
-        switch ($scope.currentOption.option.id) {
-            // Uluslarası 1A/1B makale hesaplama
-            case 0:
-                switch ($scope.currentOption.type[0].id) {
-                    case 0:
-                        point = 20;
-                        break;
-
-                    case 1:
-                        point = 8;
-                        break;
-                    //case 2:
-                    //point = 5;
-                    // break;
-                }
-
-                // $scope.currentOption.type["id"] types kısmında ki id yazılmalı
-
-                if ($scope.currentOption.params[0].answer == 1) {
-                    multiplier = 1.0;
-                } else if ($scope.currentOption.params[0].answer == 2) {
-                    if ($scope.currentOption.type[1].id == 1) {
-                        multiplier = 0.8;
-                    } else {
-                        multiplier = 0.5;
-                    }
-                } else {
-                    if ($scope.currentOption.type[1].id == 1) {
-                        multiplier = 0.5;
-                    } else if ($scope.currentOption.type[1].id == 2) {
-                        multiplier = 1.0 / parseFloat($scope.currentOption.params[0].answer);
-                    } else {
-                        multiplier = 0.5 / parseFloat($scope.currentOption.params[0].answer - 1);
-                    }
-                }
-                break;
-            case 1:
-                switch ($scope.currentOption.type[0].id) {
-                    case 0:
-                        point = 8;
-                        break;
-
-                    case 1:
-                        point = 0;
-                        break;
-                }
-
-                if ($scope.currentOption.params[0].answer == 1) {
-                    multiplier = 1.0;
-                } else if ($scope.currentOption.params[0].answer == 2) {
-                    if ($scope.currentOption.type[1].id == 1) {
-                        multiplier = 0.8;
-                    } else {
-                        multiplier = 0.5;
-                    }
-                } else {
-                    if ($scope.currentOption.type[1].id == 1) {
-                        multiplier = 0.5;
-                    } else if ($scope.currentOption.type[1].id == 2) {
-                        multiplier = 1.0 / parseFloat($scope.currentOption.params[0].answer);
-                    } else {
-                        multiplier = 0.5 / parseFloat($scope.currentOption.params[0].answer - 1);
-                    }
-                }
-                break;
-//tezden türetilen yayın makale kısmını hesaplatmaya çalışıyorum.
-            case 2:
-                switch ($scope.currentOption.type[0].id) {
-                    case 0:
-                        point = 10;
-
-                        if ($scope.currentOption.params[0].answer == 1) {
-                    multiplier = 1.0;
-                } else if ($scope.currentOption.params[0].answer == 2) {
-                    if ($scope.currentOption.type[1].id == 1) {
-                        multiplier = 0.8;
-                    } else {
-                        multiplier = 0.5;
-                    }
-                } else {
-                    if ($scope.currentOption.type[1].id == 1) {
-                        multiplier = 0.5;
-                    } else if ($scope.currentOption.type[1].id == 2) {
-                        multiplier = 1.0 / parseFloat($scope.currentOption.params[0].answer);
-                    } else {
-                        multiplier = 0.5 / parseFloat($scope.currentOption.params[0].answer - 1);
-                    }
-                }
-                	break;
-
-                    case 1:
-                        point = 5;
-
-                        if ($scope.currentOption.params[0].answer == 1) {
-                    multiplier = 1.0;
-                } else if ($scope.currentOption.params[0].answer == 2) {
-                    if ($scope.currentOption.type[1].id == 1) {
-                        multiplier = 0.8;
-                    } else {
-                        multiplier = 0.5;
-                    }
-                } else {
-                    if ($scope.currentOption.type[1].id == 1) {
-                        multiplier = 0.5;
-                    } else if ($scope.currentOption.type[1].id == 2) {
-                        multiplier = 1.0 / parseFloat($scope.currentOption.params[0].answer);
-                    } else {
-                        multiplier = 0.5 / parseFloat($scope.currentOption.params[0].answer - 1);
-                    }
-                }
-                	break;
-
-                    /*case 2:
-                        point = 5;
-                        multiplier = 1.0 / parseFloat(($scope.currentOption.params[0].answer));
-                        break;*/
-
-                    /*case 3:
-                        point = 3;
-                        multiplier = 1.0 / parseFloat(($scope.currentOption.params[0].answer));
-                        break; */
-                }
-                break;
-//tezden türetilen yayın makele sanırım hesaplatamıyorum. 
-				
-//Tezden Türetilen Bildiri
-			case 3:
-                switch ($scope.currentOption.type[0].id) {
-                    case 0:
-                        point = 5;
-                        break;
-
-                    case 1:
-                        point = 3;
-                        break;
-
-                }
-
-                multiplier = 1.0 / parseFloat(($scope.currentOption.params[0].answer));
-                break;
-//Tezden Türetilen Bildiri
-				
-            case 4:
-                switch ($scope.currentOption.type[0].id) {
-                    case 0:
-                        point = 20;
-                        break;
-
-                    case 1:
-                        point = 10;
-                        break;
-
-                    case 2:
-                        point = 15;
-                        break;
-
-                    case 3:
-                        point = 8;
-                        break;
-                }
-
-                multiplier = 1.0 / parseFloat(($scope.currentOption.params[0].answer));
-                break;
-
-            case 5:
-                switch ($scope.currentOption.type[0].id) {
-                    case 0:
-                        point = 20;
-                        break;
-
-                    case 1:
-                        point = 10;
-                        break;
-                }
-
-                multiplier = 1.0 / parseFloat($scope.currentOption.params[0].answer);
-                break;
-
-            case 6:
-                switch ($scope.currentOption.type[0].id) {
-                    case 0:
-                        point = 3;
-                        break;
-
-                    case 1:
-                        point = 2;
-                        break;
-
-                    case 2:
-                        point = 1;
-                        break;
-                }
-
-                multiplier = parseFloat($scope.currentOption.params[0].answer);
-                break;
-
-            case 7:
-                switch ($scope.currentOption.type[0].id) {
-                    case 0:
-                        point = 4;
-                        break;
-
-                    case 1:
-                        point = 2;
-                        break;
-                }
-
-                if ($scope.currentOption.params[0].answer == 1) {
-                    multiplier = 1.0;
-                } else {
-                    multiplier = 0.5;
-                }
-
-                break;
-
-            case 8:
-                switch ($scope.currentOption.type[0].id) {
-                    case 0:
-                        point = 15;
-                        break;
-
-                    case 1:
-                        point = 10;
-                        break;
-
-                    case 2:
-                        point = 6;
-                        break;
-
-                    case 3:
-                        point = 4;
-                        break;
-                }
-
-                multiplier = 1.0;
-                break;
-
-            case 9:
-                switch ($scope.currentOption.type[0].id) {
-                    case 0:
-                        point = 3;
-                        break;
-
-                    case 1:
-                        point = 2;
-                        break;
-                }
-
-                multiplier = 1.0 / parseFloat(($scope.currentOption.params[0].answer));
-                break;
-
-            case 10:
-                switch ($scope.currentOption.type[0].id) {
-                    case 0:
-                        point = 3;
-                        break;
-
-                    case 1:
-                        point = 2;
-                        break;
-                }
-                break;
-        }
-
-        var totalPoint = parseFloat(point) * parseFloat(multiplier);
-        $scope.currentOption["totalPoint"] = totalPoint;
-        $scope.generalPoint += totalPoint;
-
-        $scope.addedOptions.push($scope.currentOption);
-        $scope.optionCount += 1;
-
-        for (var i = 0; i < $scope.asocProfData.length; i++) {
-            if ($scope.asocProfData[i].id == $scope.currentOption.option.id) {
-                if ($scope.currentOption.option.id == 5)
-                    $scope.asocProfData[i].totalEntry += $scope.currentOption.params[0].answer;
-                else
-                    $scope.asocProfData[i].totalEntry += 1;
-
-                $scope.asocProfData[i].totalPoint += $scope.currentOption.totalPoint;
-            }
-        }
-
-        $scope.asocEntryCount = 0;
-        $scope.asocTotalPoint = 0;
-        for (var i = 0; i < $scope.asocProfData.length; i++) {
-            $scope.asocEntryCount += $scope.asocProfData[i].totalEntry;
-
-            switch ($scope.asocProfData[i].id) {
-                case 0:
-                    var status = false;
-                    var textMessage = 'Message';
-                    $scope.asocProfData[i].asocPoint = $scope.asocProfData[i].totalPoint;
-
-                    for (var j = 0; j < $scope.addedOptions.length; j++) {
-
-                        if ($scope.addedOptions[j].option.id == 0) {
-                            if (($scope.addedOptions[j].params[0].answer == 1) && ($scope.asocProfData[i].totalPoint >= 40)){
-                                status = true;
-                            }else{
-                                textMessage = '1A Kategorisinde en az 40 puan almanız gerekmektedir';
-                            }
-                        }
-                    }
-
-                    $scope.asocProfData[i].status = status;
-                    $scope.asocProfData[i].textMessage = textMessage;
-                    break;
-
-                case 1:
-                    $scope.asocProfData[i].asocPoint = $scope.asocProfData[i].totalPoint;
-
-                    $scope.asocProfData[i].status = ($scope.asocProfData[i].asocPoint >= 8);
-                    break;
-
-                case 2:
-                    $scope.asocProfData[i].asocPoint = ($scope.asocProfData[i].totalPoint < 10) ? ($scope.asocProfData[i].totalPoint) : 10;
-
-                    $scope.asocProfData[i].status = ($scope.asocProfData[i].totalEntry >= 1);
-                    break;
-					
-				case 3:
-                    $scope.asocProfData[i].asocPoint = ($scope.asocProfData[i].totalPoint < 10) ? ($scope.asocProfData[i].totalPoint) : 10;
-
-                    $scope.asocProfData[i].status = ($scope.asocProfData[i].totalEntry >= 1);
-                    break;
-
-                case 4:
-                    $scope.asocProfData[i].asocPoint = ($scope.asocProfData[i].totalPoint < 20) ? ($scope.asocProfData[i].totalPoint) : 20;
-
-                    $scope.asocProfData[i].status = true;
-                    break;
-
-                case 5:
-                    $scope.asocProfData[i].asocPoint = $scope.asocProfData[i].totalPoint;
-
-                    $scope.asocProfData[i].status = true;
-                    break;
-
-                case 6:
-                    $scope.asocProfData[i].asocPoint = ($scope.asocProfData[i].totalPoint < 20) ? ($scope.asocProfData[i].totalPoint) : 20;
-
-                    $scope.asocProfData[i].status = ($scope.asocProfData[i].asocPoint >= 4);
-                    break;
-
-                case 7:
-                    $scope.asocProfData[i].asocPoint = ($scope.asocProfData[i].totalPoint < 10) ? ($scope.asocProfData[i].totalPoint) : 10;
-
-                    $scope.asocProfData[i].status = true;
-                    break;
-
-                case 8:
-                    $scope.asocProfData[i].asocPoint = ($scope.asocProfData[i].totalPoint < 20) ? ($scope.asocProfData[i].totalPoint) : 20;
-
-                    $scope.asocProfData[i].status = true;
-                    break;
-
-                case 9:
-                    $scope.asocProfData[i].asocPoint = ($scope.asocProfData[i].totalPoint < 10) ? ($scope.asocProfData[i].totalPoint) : 10;
-
-                    $scope.asocProfData[i].status = ($scope.asocProfData[i].asocPoint >= 5);
-                    break;
-
-                case 10:
-                    $scope.asocProfData[i].asocPoint = ($scope.asocProfData[i].totalPoint < 4) ? ($scope.asocProfData[i].totalPoint) : 4;
-
-                    $scope.asocProfData[i].status = ($scope.asocProfData[i].asocPoint >= 2);
-                    break;
-            }
-
-            $scope.asocTotalPoint += $scope.asocProfData[i].asocPoint;
-        }
-
-        $scope.totalStatus = true;
-        for (var i = 0; i < $scope.asocProfData.length; i++) {
-            if ($scope.asocProfData[i].status == false)
-                $scope.totalStatus = false;
-        }
-
-        if ($scope.totalStatus) {
-            $scope.totalStatus = ($scope.asocTotalPoint >= 100);
-        }
-
-        $scope.currentOption = {};
-    };
-
-    $scope.deleteOption = function (index) {
-        for (var i = 0; i < $scope.asocProfData.length; i++) {
-            if ($scope.asocProfData[i].id == $scope.addedOptions[index].option.id) {
-                if ($scope.addedOptions[index].option.id == 5)
-                    $scope.asocProfData[i].totalEntry -= $scope.addedOptions[index].params[0].answer;
-                else
-                    $scope.asocProfData[i].totalEntry -= 1;
-
-                $scope.asocProfData[i].totalPoint -= $scope.addedOptions[index].totalPoint;
-            }
-        }
-
-        $scope.optionCount -= 1;
-        $scope.generalPoint -= $scope.addedOptions[index].totalPoint;
-        $scope.addedOptions.splice(index, 1);
-
-        $scope.asocEntryCount = 0;
-        $scope.asocTotalPoint = 0;
-        for (var i = 0; i < $scope.asocProfData.length; i++) {
-            $scope.asocEntryCount += $scope.asocProfData[i].totalEntry;
-
-            switch ($scope.asocProfData[i].id) {
-                case 0:
-                    var status = false;
-
-                    $scope.asocProfData[i].asocPoint = $scope.asocProfData[i].totalPoint;
-
-                    for (var j = 0; j < $scope.addedOptions.length; j++) {
-                        if ($scope.addedOptions[j].option.id == 0) {
-
-                        }
-                    }
-
-                    $scope.asocProfData[i].status = status;
-                    break;
-
-                case 1:
-                    $scope.asocProfData[i].asocPoint = $scope.asocProfData[i].totalPoint;
-
-                    $scope.asocProfData[i].status = ($scope.asocProfData[i].asocPoint >= 8);
-                    break;
-
-                case 2:
-                    $scope.asocProfData[i].asocPoint = ($scope.asocProfData[i].totalPoint < 10) ? ($scope.asocProfData[i].totalPoint) : 10;
-
-                    $scope.asocProfData[i].status = ($scope.asocProfData[i].totalEntry >= 1);
-                    break;
-					
-				case 3:
-                    $scope.asocProfData[i].asocPoint = ($scope.asocProfData[i].totalPoint < 10) ? ($scope.asocProfData[i].totalPoint) : 10;
-
-                    $scope.asocProfData[i].status = ($scope.asocProfData[i].totalEntry >= 1);
-                    break;
-
-                case 4:
-                    $scope.asocProfData[i].asocPoint = ($scope.asocProfData[i].totalPoint < 20) ? ($scope.asocProfData[i].totalPoint) : 20;
-
-                    $scope.asocProfData[i].status = true;
-                    break;
-
-                case 5:
-                    $scope.asocProfData[i].asocPoint = $scope.asocProfData[i].totalPoint;
-
-                    $scope.asocProfData[i].status = true;
-                    break;
-
-                case 6:
-                    $scope.asocProfData[i].asocPoint = ($scope.asocProfData[i].totalPoint < 20) ? ($scope.asocProfData[i].totalPoint) : 20;
-
-                    $scope.asocProfData[i].status = ($scope.asocProfData[i].asocPoint >= 4);
-                    break;
-
-                case 7:
-                    $scope.asocProfData[i].asocPoint = ($scope.asocProfData[i].totalPoint < 10) ? ($scope.asocProfData[i].totalPoint) : 10;
-
-                    $scope.asocProfData[i].status = true;
-                    break;
-
-                case 8:
-                    $scope.asocProfData[i].asocPoint = ($scope.asocProfData[i].totalPoint < 20) ? ($scope.asocProfData[i].totalPoint) : 20;
-
-                    $scope.asocProfData[i].status = true;
-                    break;
-
-                case 9:
-                    $scope.asocProfData[i].asocPoint = ($scope.asocProfData[i].totalPoint < 10) ? ($scope.asocProfData[i].totalPoint) : 10;
-
-                    $scope.asocProfData[i].status = ($scope.asocProfData[i].asocPoint >= 5);
-                    break;
-
-                case 10:
-                    $scope.asocProfData[i].asocPoint = ($scope.asocProfData[i].totalPoint < 4) ? ($scope.asocProfData[i].totalPoint) : 4;
-
-                    $scope.asocProfData[i].status = ($scope.asocProfData[i].asocPoint >= 2);
-                    break;
-            }
-
-            $scope.asocTotalPoint += $scope.asocProfData[i].asocPoint;
-        }
-
-        $scope.totalStatus = true;
-        for (var i = 0; i < $scope.asocProfData.length; i++) {
-            if ($scope.asocProfData[i].status == false)
-                $scope.totalStatus = false;
-        }
-
-        if ($scope.totalStatus) {
-            $scope.totalStatus = ($scope.asocTotalPoint >= 100);
-        }
-    };
-});
+      }
+      break; // Bu satırı ekleyin
+    case "2":
+      point = 5;
+      multiplier = 1.0 / parseFloat(data.yazar_sayisi);
+      break; // Bu satırı ekleyin
+    case "3":
+      point = 3;
+      multiplier = 1.0 / parseFloat(data.yazar_sayisi);
+      break; // Bu satırı ekleyin
+  }
+  point = point * multiplier;
+  return point;
+},
+
+  
+  kitap: function (data) {
+    let point, multiplier;
+    switch (data.kitap) {
+      case "0":
+        point = 20;
+        break;
+      case "1":
+        point = 10;
+        break;
+      case "2":
+        point = 15;
+        break;
+      case "3":
+        point = 8;
+        break;
+    }
+
+    multiplier = 1.0 / parseFloat(data.yazar_sayisi);
+    point = point * multiplier;
+    return point;
+  },
+  patent: function (data) {
+    let point
+    let multiplier;
+    console.log(data)
+    switch (data.patent) {
+      case "0":
+        console.log('burada')
+        point = 20;
+        break;
+      case "1":
+        point = 10;
+        break;
+    }
+
+    multiplier = 1.0 / parseFloat(Number(data.kisi));
+    console.log(multiplier, point)
+    point = point * multiplier;
+    console.log(multiplier, point)
+    console.log(point)
+    return point;
+  },
+  atiflar: function (data) {
+    let point, multiplier;
+    switch (data.atif) {
+      case "0":
+        point = 3;
+        break;
+      case "1":
+        point = 2;
+        break;
+      case "2":
+        point = 1;
+        break;
+    }
+
+    multiplier = parseFloat(data.atif_sayisi);
+    point = point * multiplier;
+    return point;
+  },
+  
+  lisansustu_tez_danismanligi: function (data) {
+    let point, multiplier;
+    switch (data.unvan) {
+      case "0":
+        point = 4;
+        break;
+
+      case "1":
+        point = 2;
+        break;
+    }
+
+    if (data.danisman_sira == 1) {
+      multiplier = 1.0;
+    } else {
+      multiplier = 0.5;
+    }
+
+    point = point * multiplier;
+    return point;
+  },
+  bilimsel_arastirma_projeleri: function (data) {
+    let point, multiplier;
+    switch (data.proje_tipi) {
+      case "0":
+        point = 15;
+        break;
+      case "1":
+        point = 10;
+        break;
+      case "2":
+        point = 6;
+        break;
+      case "3":
+        point = 4;
+        break;
+    }
+
+    multiplier = 1.0;
+
+    point = point * multiplier;
+
+    return point;
+  },
+  
+  bilimsel_toplanti_faliyeti: function (data) {
+    let point, multiplier;
+    switch (data.bildiri) {
+      case "0":
+        point = 3;
+        break;
+
+      case "1":
+        point = 2;
+        break;
+    }
+
+    multiplier = 1.0 / parseFloat(data.yazar_sayisi);
+    point = point * multiplier;
+    return point;
+  },
+  egitim_ogretim_faliyeti: function (data) {
+    let point;
+    switch (data.ogretim_faliyeti) {
+      case "0":
+        point = 3;
+        break;
+      case "1":
+        point = 2;
+        break;
+    }
+
+    return point;
+  },
+};
